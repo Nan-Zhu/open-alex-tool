@@ -1,2 +1,8 @@
+"""
+Test of openalextool works class
+"""
+
+
 def test_sample():
-    assert 100 == 100
+    """Sample test"""
+    assert True
