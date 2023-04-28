@@ -2,7 +2,6 @@
 Class for Open Alex Works
 """
 
-import time
 import requests
 
 from bibtexparser.bwriter import BibTexWriter
