@@ -3,10 +3,12 @@ Class for Open Alex Works
 """
 
 import time
+import base64
 import requests
 
 from bibtexparser.bwriter import BibTexWriter
 from bibtexparser.bibdatabase import BibDatabase
+from IPython.display import HTML
 
 
 class Works:
@@ -17,7 +19,6 @@ class Works:
         if oaid is not None:
             self.req = requests.get(f"https://api.openalex.org/works/{oaid}")
             self.data = self.req.json()
-            self.bibtex = self.get_bibtex()
 
     def __repr__(self):
         _authors = [au["author"]["display_name"] for au in self.data["authorships"]]
@@ -42,8 +43,10 @@ class Works:
         year = self.data["publication_year"]
         citedby = self.data["cited_by_count"]
         work_id = self.data["id"]
-        description = f'{authors}, {title}, {volume}{issue}{pages}, ({year}), \
-            {self.data["doi"]}. cited by: {citedby}. {work_id}'
+        description = (
+            f"{authors}, {title}, {volume}{issue}{pages}, ({year}),"
+            + f'{self.data["doi"]}. cited by: {citedby}. {work_id}'
+        )
         return description
 
     def citing_works(self):
@@ -67,7 +70,8 @@ class Works:
             time.sleep(0.101)
         return rworks
 
-    def get_bibtex(self):
+    @property
+    def bibtex(self):
         """GetBibtex of this work"""
         database = BibDatabase()
         authors = ""
@@ -96,4 +100,38 @@ class Works:
             }
         ]
         writer = BibTexWriter()
-        return writer.write(database)
+        bib = writer.write(database)
+        bib64 = base64.b64encode(bib.encode("utf-8")).decode("utf8")
+        uri = (
+            f'<pre>{bib}<pre><br><a href="data:text/plain;base64,'
+            + f'{bib64}" download="ris">Download Bibtex</a>'
+        )
+        return HTML(uri)
+
+    @property
+    def ris(self):
+        """Get ris of the work"""
+        fields = []
+        if self.data["type"] == "journal-article":
+            fields += ["TY  - JOUR"]
+        else:
+            raise Exception("Unsupported type {self.data['type']}")
+        for author in self.data["authorships"]:
+            fields += [f'AU  - {author["author"]["display_name"]}']
+        fields += [f'PY  - {self.data["publication_year"]}']
+        fields += [f'TI  - {self.data["title"]}']
+        fields += [f'JO  - {self.data["host_venue"]["display_name"]}']
+        fields += [f'VL  - {self.data["biblio"]["volume"]}']
+        if self.data["biblio"]["issue"]:
+            fields += [f'IS  - {self.data["biblio"]["issue"]}']
+        fields += [f'SP  - {self.data["biblio"]["first_page"]}']
+        fields += [f'EP  - {self.data["biblio"]["last_page"]}']
+        fields += [f'DO  - {self.data["doi"]}']
+        fields += ["ER  -"]
+        ris = "\n".join(fields)
+        ris64 = base64.b64encode(ris.encode("utf-8")).decode("utf8")
+        uri = (
+            f'<pre>{ris}<pre><br><a href="data:text/plain;base64,'
+            + f'{ris64}" download="ris">Download RIS</a>'
+        )
+        return HTML(uri)
