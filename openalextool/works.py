@@ -49,18 +49,6 @@ class Works:
         )
         return description
 
-    def citing_works(self):
-        """Get works cite this work"""
-        cworks = []
-        cworks_data = requests.get(self.data["cited_by_api_url"], timeout=10).json()
-        for cw_data in cworks_data["results"]:
-            cwork = Works(cw_data["doi"])
-            if cw_data["doi"] is None:
-                cwork.data = cw_data
-            cworks += [cwork]
-            time.sleep(0.101)
-        return cworks
-
     @property
     def bibtex(self):
         """GetBibtex of this work"""
