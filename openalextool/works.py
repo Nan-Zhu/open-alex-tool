@@ -15,7 +15,9 @@ class Works:
     def __init__(self, oaid):
         self.oaid = oaid
         if oaid is not None:
-            self.req = requests.get(f"https://api.openalex.org/works/{oaid}")
+            self.req = requests.get(
+                f"https://api.openalex.org/works/{oaid}", timeout=10
+            )
             self.data = self.req.json()
 
     def __repr__(self):
@@ -50,7 +52,7 @@ class Works:
     def citing_works(self):
         """Get works cite this work"""
         cworks = []
-        cworks_data = requests.get(self.data["cited_by_api_url"]).json()
+        cworks_data = requests.get(self.data["cited_by_api_url"], timeout=10).json()
         for cw_data in cworks_data["results"]:
             cwork = Works(cw_data["doi"])
             if cw_data["doi"] is None:
@@ -99,7 +101,7 @@ class Works:
         if self.data["type"] == "journal-article":
             fields += ["TY  - JOUR"]
         else:
-            raise Exception("Unsupported type {self.data['type']}")
+            return ""
         for author in self.data["authorships"]:
             fields += [f'AU  - {author["author"]["display_name"]}']
         fields += [f'PY  - {self.data["publication_year"]}']
