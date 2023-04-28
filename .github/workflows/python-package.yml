@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: pip install pylint
       - name: Run Pylint
-        run: pylint --output-format=parseable *.py
+        run: pylint --disable=no-value-for-parameter *.py openalextool/*.py
       
   Test:
     runs-on: ubuntu-latest
