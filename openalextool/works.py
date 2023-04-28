@@ -3,12 +3,10 @@ Class for Open Alex Works
 """
 
 import time
-import base64
 import requests
 
 from bibtexparser.bwriter import BibTexWriter
 from bibtexparser.bibdatabase import BibDatabase
-from IPython.display import HTML
 
 
 class Works:
@@ -61,15 +59,6 @@ class Works:
             time.sleep(0.101)
         return cworks
 
-    def references(self):
-        """Get reference works"""
-        rworks = []
-        for rw_url in self.data["referenced_works"]:
-            rwork = Works(rw_url)
-            rworks += [rwork]
-            time.sleep(0.101)
-        return rworks
-
     @property
     def bibtex(self):
         """GetBibtex of this work"""
@@ -101,12 +90,7 @@ class Works:
         ]
         writer = BibTexWriter()
         bib = writer.write(database)
-        bib64 = base64.b64encode(bib.encode("utf-8")).decode("utf8")
-        uri = (
-            f'<pre>{bib}<pre><br><a href="data:text/plain;base64,'
-            + f'{bib64}" download="ris">Download Bibtex</a>'
-        )
-        return HTML(uri)
+        return bib
 
     @property
     def ris(self):
@@ -129,9 +113,4 @@ class Works:
         fields += [f'DO  - {self.data["doi"]}']
         fields += ["ER  -"]
         ris = "\n".join(fields)
-        ris64 = base64.b64encode(ris.encode("utf-8")).decode("utf8")
-        uri = (
-            f'<pre>{ris}<pre><br><a href="data:text/plain;base64,'
-            + f'{ris64}" download="ris">Download RIS</a>'
-        )
-        return HTML(uri)
+        return ris
